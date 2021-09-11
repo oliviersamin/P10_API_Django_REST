@@ -10,11 +10,11 @@ class Projects(models.Model):
     description = models.CharField(max_length=400)
     type = models.CharField(max_length=128)
     contributors = models.ManyToManyField(User, related_name="collaborators")
-    author_user_id = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_author")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="project_author")
 
     def __str__(self):
         contributors = [contributor.pk for contributor in self.contributors.all()]
-        return "id: {} - title: {} - author: {} - contributors: {}".format(self.pk, self.title, self.author_user_id.pk,
+        return "id: {} - title: {} - author: {} - contributors: {}".format(self.pk, self.title, self.author.pk,
                                                                            contributors)
 
 
@@ -26,8 +26,8 @@ class Issues(models.Model):
     # project_id = models.IntegerField('project id')
     project_id = models.ForeignKey(Projects, on_delete=models.CASCADE)
     status = models.CharField(max_length=128)
-    author_user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='issue_author')
-    assignee_user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='issue_assignee')
+    author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='issue_author')
+    assignee = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name='issue_assignee')
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -36,7 +36,7 @@ class Issues(models.Model):
 
 class Comments(models.Model):
     description = models.CharField(max_length=400)
-    author_user_id = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comment_author")
+    author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comment_author")
     issue_id = models.ForeignKey(to=Issues, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 

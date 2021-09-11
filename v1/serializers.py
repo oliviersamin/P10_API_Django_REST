@@ -3,11 +3,6 @@ from rest_framework import serializers
 from .models import Projects, Issues, Comments
 
 
-# class UserSerializer(serializers.HyperlinkedModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['username', 'first_name', 'last_name', 'email', 'password']
-
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -22,10 +17,15 @@ class UserSerializer(serializers.ModelSerializer):
         return user
 
 
-
 class ProjectListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
-        fields = ['id', 'title', 'description', 'type', 'contributors', 'author_user_id']
+        fields = ['id', 'title']  # , 'description', 'type', 'contributors', 'author_user_id']
         extra_kwargs = {'id': {'read_only': True}}
 
+
+class ProjectDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields = ['id', 'title', 'description', 'type', 'contributors', 'author']
+        extra_kwargs = {'id': {'read_only': True}}

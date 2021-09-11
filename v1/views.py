@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import UserSerializer, ProjectListSerializer
+from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer
 from .models import Projects
 from rest_framework import generics
 from rest_framework.response import Response
@@ -26,7 +26,7 @@ class ProjectList(APIView):
     """
 
     def get(self, request):
-        projects1 = Projects.objects.filter(author_user_id=request.user)
+        projects1 = Projects.objects.filter(author=request.user)
         projects2 = Projects.objects.filter(contributors=request.user)
         projects1 = projects1.annotate(content_type=Value('author', CharField()))
         projects2 = projects2.annotate(content_type=Value('contributor', CharField()))
@@ -37,6 +37,27 @@ class ProjectList(APIView):
 
     def post(self, request):
         serializer = ProjectListSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProjectDetail(APIView):
+    """
+    Displays the details regarding the project with the corresponding id
+    * the user must be logged in to access these informations
+    * only the projects related to the user are accessible through the GET method
+
+    """
+
+    def get(self, request, id):
+        project = Projects.objects.filter(id=id)[0]
+        serializer = ProjectDetailSerializer(project)
+        return Response(serializer.data)
+
+    def put(self, request, id):
+        serializer = ProjectDetailSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
