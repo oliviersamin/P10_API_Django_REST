@@ -1,20 +1,20 @@
-/project/ : Example of a valid project data to POST:
+/project/ : Example of a valid project data to POST: # l'auteur est ajouté automatiquement, impossible d'ajouter des contributeurs
 
 {
 "title":"test",
 "description":"desc",    
-"type":"test",
-"contributors":["1"],
-"author":"6"
+"type":"test"
 }
 
-/project/{id} : Example of a valid project data to PUT:
+/project/{id} : Example of a valid project data to PUT: # impossible de modifier l'auteur et les contributeurs
 {
-"id": "2",
 "title":"modif",
 "description":"desc",    
 "type":"IOS",
-"contributors":["5"],
-"author":"1"
+}
+
+/project/{id}/users : Example of a valid project data to POST: # modifie uniquement les contributeurs
+{
+"contributors": [1, 5, 6]
 }
 

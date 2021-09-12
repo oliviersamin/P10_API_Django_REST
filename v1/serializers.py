@@ -28,5 +28,12 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = ['id', 'title', 'description', 'type', 'contributors', 'author']
-        extra_kwargs = {'id': {'read_only': True}}
+        extra_kwargs = {'id': {'read_only': True},
+                        'contributors': {'read_only': True},
+                        'author': {'read_only': True}}
 
+
+class ProjectContributorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields = ['contributors']

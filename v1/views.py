@@ -2,7 +2,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render, redirect
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer
+from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectContributorSerializer
 from .models import Projects
 from rest_framework import generics
 from rest_framework.response import Response
@@ -38,7 +38,7 @@ class ProjectList(APIView):
     def post(self, request):
         serializer = ProjectDetailSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,24 +51,68 @@ class ProjectDetail(APIView):
 
     """
 
-    def get(self, request, id):
-        project = Projects.objects.get(id=id)
+    def get(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
         serializer = ProjectDetailSerializer(project)
         return Response(serializer.data)
 
-    def put(self, request, id):
-        project = Projects.objects.get(id=id)
+    def put(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
         serializer = ProjectDetailSerializer(project, data=request.data)
         if (serializer.is_valid()) & (project.author.pk == request.user.pk):
             serializer.save()
             return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        elif (serializer.is_valid()) & (project.author.pk != request.user.pk):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def delete(self, request, id):
-        project = Projects.objects.get(id=id)
+    def delete(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
         if project.author.pk == request.user.pk:
             project.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class ProjectContributors(APIView):
+    """
+    à remplir
+    """
+    def get(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
+        serializer = ProjectContributorSerializer(project)
+        return Response(serializer.data)
+
+    def post(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
+        serializer = ProjectContributorSerializer(project, data=request.data)
+        if (serializer.is_valid()) & (project.author.pk == request.user.pk):
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        elif (serializer.is_valid()) & (project.author.pk != request.user.pk):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class DeleteContributor(APIView):
+    """
+    à remplir
+    """
+
+    def delete(self, request, project_id, user_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        print('#############  user delete ######################')
+        print(contributors, type(contributors))
+        for index, id in enumerate(contributors):
+            if (id == user_id) & (project.author.pk == request.user.pk):
+                contributors.pop(index)
+                print("CONTRIBUTORS = ", contributors)
+                project.contributors.set(contributors)
+                project.save()
+                return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_403_FORBIDDEN)
 
 
