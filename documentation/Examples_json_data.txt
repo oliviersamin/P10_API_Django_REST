@@ -1,0 +1,20 @@
+/project/ : Example of a valid project data to POST:
+
+{
+"title":"test",
+"description":"desc",    
+"type":"test",
+"contributors":["1"],
+"author":"6"
+}
+
+/project/{id} : Example of a valid project data to PUT:
+{
+"id": "2",
+"title":"modif",
+"description":"desc",    
+"type":"IOS",
+"contributors":["5"],
+"author":"1"
+}
+

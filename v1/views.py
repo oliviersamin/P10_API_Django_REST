@@ -36,7 +36,7 @@ class ProjectList(APIView):
         return Response(serializer.data)
 
     def post(self, request):
-        serializer = ProjectListSerializer(data=request.data)
+        serializer = ProjectDetailSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -52,16 +52,24 @@ class ProjectDetail(APIView):
     """
 
     def get(self, request, id):
-        project = Projects.objects.filter(id=id)[0]
+        project = Projects.objects.get(id=id)
         serializer = ProjectDetailSerializer(project)
         return Response(serializer.data)
 
     def put(self, request, id):
-        serializer = ProjectDetailSerializer(data=request.data)
-        if serializer.is_valid():
+        project = Projects.objects.get(id=id)
+        serializer = ProjectDetailSerializer(project, data=request.data)
+        if (serializer.is_valid()) & (project.author.pk == request.user.pk):
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, id):
+        project = Projects.objects.get(id=id)
+        if project.author.pk == request.user.pk:
+            project.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class UserView(viewsets.ModelViewSet):
