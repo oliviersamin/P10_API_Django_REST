@@ -1,9 +1,9 @@
-from django.contrib.auth.models import User, Group
-from django.shortcuts import render, redirect
+from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import permissions
-from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectContributorSerializer
-from .models import Projects
+from . import serializers
+# from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectContributorSerializer
+from .models import Projects, Issues, Comments
 from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -14,7 +14,7 @@ from rest_framework import status
 
 class Signup(generics.CreateAPIView):
     queryset = User.objects.all()
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
 
 
 class ProjectList(APIView):
@@ -26,17 +26,20 @@ class ProjectList(APIView):
     """
 
     def get(self, request):
-        projects1 = Projects.objects.filter(author=request.user)
-        projects2 = Projects.objects.filter(contributors=request.user)
-        projects1 = projects1.annotate(content_type=Value('author', CharField()))
-        projects2 = projects2.annotate(content_type=Value('contributor', CharField()))
-        projects = set(sorted(chain(projects1, projects2), key=lambda project: project.title))
-        projects = list(projects)
-        serializer = ProjectListSerializer(projects, many=True)
-        return Response(serializer.data)
+        users = list(User.objects.all())
+        if request.user in users:
+            projects1 = Projects.objects.filter(author=request.user)
+            projects2 = Projects.objects.filter(contributors=request.user)
+            projects1 = projects1.annotate(content_type=Value('author', CharField()))
+            projects2 = projects2.annotate(content_type=Value('contributor', CharField()))
+            projects = set(sorted(chain(projects1, projects2), key=lambda project: project.id))
+            projects = list(projects)
+            serializer = serializers.ProjectListSerializer(projects, many=True)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request):
-        serializer = ProjectDetailSerializer(data=request.data)
+        serializer = serializers.ProjectDetailSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save(author=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -53,12 +56,15 @@ class ProjectDetail(APIView):
 
     def get(self, request, project_id):
         project = Projects.objects.get(id=project_id)
-        serializer = ProjectDetailSerializer(project)
-        return Response(serializer.data)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            serializer = serializers.ProjectDetailSerializer(project)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request, project_id):
         project = Projects.objects.get(id=project_id)
-        serializer = ProjectDetailSerializer(project, data=request.data)
+        serializer = serializers.ProjectDetailSerializer(project, data=request.data)
         if (serializer.is_valid()) & (project.author.pk == request.user.pk):
             serializer.save()
             return Response(serializer.data)
@@ -81,12 +87,15 @@ class ProjectContributors(APIView):
     """
     def get(self, request, project_id):
         project = Projects.objects.get(id=project_id)
-        serializer = ProjectContributorSerializer(project)
-        return Response(serializer.data)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            serializer = serializers.ProjectContributorSerializer(project)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request, project_id):
         project = Projects.objects.get(id=project_id)
-        serializer = ProjectContributorSerializer(project, data=request.data)
+        serializer = serializers.ProjectContributorSerializer(project, data=request.data)
         if (serializer.is_valid()) & (project.author.pk == request.user.pk):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -104,10 +113,8 @@ class DeleteContributor(APIView):
     def delete(self, request, project_id, user_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
-        print('#############  user delete ######################')
-        print(contributors, type(contributors))
-        for index, id in enumerate(contributors):
-            if (id == user_id) & (project.author.pk == request.user.pk):
+        for index, value in enumerate(contributors):
+            if (value == user_id) & (project.author.pk == request.user.pk):
                 contributors.pop(index)
                 print("CONTRIBUTORS = ", contributors)
                 project.contributors.set(contributors)
@@ -116,11 +123,142 @@ class DeleteContributor(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
 
+class IssuesList(APIView):
+    """
+    A FAIRE
+    """
+
+    def get(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            issues = sorted(list(Issues.objects.filter(project_id=project_id)), key=lambda issue: issue.created_time)
+            issues.reverse()
+            if issues == []:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            else:
+                serializer = serializers.IssuesListSerializer(issues, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def post(self, request, project_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            serializer = serializers.CreateIssueSerializer(data=request.data)
+            if (serializer.is_valid()) & (project.author.pk == request.user.pk):
+                serializer.save(project_id=project, author=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            elif (serializer.is_valid()) & (project.author.pk != request.user.pk):
+                return Response(status=status.HTTP_403_FORBIDDEN)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IssueDetails(APIView):
+    """
+    A FAIRE
+    """
+
+    def get(self, request, project_id, issue_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            issue = Issues.objects.get(id=issue_id)
+            serializer = serializers.CreateIssueSerializer(issue)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def put(self, request, project_id, issue_id):
+        issue = Issues.objects.get(id=issue_id)
+        serializer = serializers.CreateIssueSerializer(issue, data=request.data)
+        if (serializer.is_valid()) & (issue.author.pk == request.user.pk):
+            serializer.save()
+            return Response(serializer.data)
+        elif (serializer.is_valid()) & (issue.author.pk != request.user.pk):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, project_id, issue_id):
+        issue = Issues.objects.get(id=issue_id)
+        if issue.author.pk == request.user.pk:
+            issue.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class CommentsList(APIView):
+    """
+    A FAIRE
+    """
+    def get(self, request, project_id, issue_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            issue = Issues.objects.get(id=issue_id)
+            comments = sorted(list(Comments.objects.filter(issue_id=issue.id)),
+                              key=lambda comment: comment.created_time)
+            comments.reverse()
+            if comments:
+                serializer = serializers.CommentsListSerializer(comments, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+    def post(self, request, project_id, issue_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            issue = Issues.objects.get(id=issue_id)
+            serializer = serializers.CommentDetailsSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save(issue=issue, author=request.user)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+class CommentDetails(APIView):
+    """
+    A FAIRE
+    """
+    def get(self, request, project_id, issue_id, comment_id):
+        project = Projects.objects.get(id=project_id)
+        contributors = [contributor.pk for contributor in project.contributors.all()]
+        if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
+            comment = Comments.objects.get(id=comment_id)
+            serializer = serializers.CommentDetailsSerializer(comment)
+            return Response(serializer.data)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
+    def put(self, request, project_id, issue_id, comment_id):
+        comment = Comments.objects.get(id=comment_id)
+        serializer = serializers.CommentDetailsSerializer(comment, data=request.data)
+        if (serializer.is_valid()) & (comment.author.pk == request.user.pk):
+            serializer.save()
+            return Response(serializer.data)
+        elif (serializer.is_valid()) & (comment.author.pk != request.user.pk):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def delete(self, request, project_id, issue_id, comment_id):
+        comment = Comments.objects.get(id=comment_id)
+        if comment.author.pk == request.user.pk:
+            comment.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_403_FORBIDDEN)
+
+
 class UserView(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
     queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
+    serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-

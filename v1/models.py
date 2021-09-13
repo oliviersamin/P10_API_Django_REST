@@ -19,6 +19,7 @@ class Projects(models.Model):
 
 
 class Issues(models.Model):
+    id = models.AutoField(primary_key=True)
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=400)
     tag = models.CharField(max_length=128)
@@ -35,9 +36,10 @@ class Issues(models.Model):
 
 
 class Comments(models.Model):
+    id = models.AutoField(primary_key=True)
     description = models.CharField(max_length=400)
     author = models.ForeignKey(to=User, on_delete=models.CASCADE, related_name="comment_author")
-    issue_id = models.ForeignKey(to=Issues, on_delete=models.CASCADE)
+    issue = models.ForeignKey(to=Issues, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

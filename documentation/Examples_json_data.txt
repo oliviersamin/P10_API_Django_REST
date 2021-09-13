@@ -1,11 +1,14 @@
-/project/ : Example of a valid project data to POST: # l'auteur est ajouté automatiquement, impossible d'ajouter des contributeurs
-
+#################################################################################################################
+/project/ : Example of a valid project data to POST: 
+# l'auteur est ajouté automatiquement, impossible d'ajouter des contributeurs
+# "type" is to be chosen between "IOS", "ANDROID", "BACK-END", "FRONT-END"
 {
 "title":"test",
 "description":"desc",    
-"type":"test"
+"type":"BACK-END"
 }
 
+#################################################################################################################
 /project/{id} : Example of a valid project data to PUT: # impossible de modifier l'auteur et les contributeurs
 {
 "title":"modif",
@@ -13,8 +16,45 @@
 "type":"IOS",
 }
 
+#################################################################################################################
 /project/{id}/users : Example of a valid project data to POST: # modifie uniquement les contributeurs
 {
 "contributors": [1, 5, 6]
+}
+
+
+#################################################################################################################
+/project/{id}/issues : Example of a valid issue data to POST: 
+# id, project_id, author and created_time are viewable only
+# "tag" is to be chosen between "BUG", "AMELIORATION", "TACHE"
+# "priority" is to be chosen between "FAIBLE", "MOYENNE", "ELEVEE"
+# "status" is to be chosen between "A FAIRE", "EN COURS", "TERMINEE"
+# "assignee" is the author by default
+{
+"title":"issue_test", 
+"description":"description_test", 
+"tag":"TACHE", 
+"priority":"ELEVEE", 
+"status":"A FAIRE", 
+"assignee":"1"
+}
+
+#################################################################################################################
+/project/{id}/issues/{id} : Example of a valid issue data to PUT: 
+
+{
+"title":"issue_modif", 
+"description":"description_modif", 
+"tag":"BUG", 
+"priority":"MOYENNE", 
+"status":"EN COURS", 
+"assignee":"6"
+}
+
+#################################################################################################################
+/project/{id}/issues/{id}/comments : Example of a valid comment data to POST or PUT: 
+
+{
+"description":"description_commentaire" 
 }
 

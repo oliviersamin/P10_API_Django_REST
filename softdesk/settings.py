@@ -133,8 +133,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-LOGIN_REDIRECT_URL = '/softdesk/v1/projects'
-LOGOUT_REDIRECT_URL = '/softdesk/v1/login'
+# LOGIN_REDIRECT_URL = '/softdesk/v1/projects'
+# LOGOUT_REDIRECT_URL = '/softdesk/v1/login'
 # SIGNUP_REDIRECT_URL = '/softdesk/v1/login'
 
 REST_REGISTRATION = {

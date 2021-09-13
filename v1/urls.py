@@ -1,19 +1,17 @@
 from django.urls import include, path
-from .views import ProjectList, Signup, ProjectDetail, ProjectContributors, DeleteContributor
-from rest_framework import routers
-
+from . import views
 
 app_name = 'v1'
 
-# router = routers.DefaultRouter()
-# router.register(r'projects', ProjectView)
 
 urlpatterns = [
-    path('projects/', ProjectList.as_view(), name='projects-list'),
-    path('projects/<int:project_id>', ProjectDetail.as_view(), name='projects-list'),
-    path('projects/<int:project_id>/users', ProjectContributors.as_view(), name='projects-list'),
-    path('projects/<int:project_id>/users/<int:user_id>', DeleteContributor.as_view(), name='projects-list'),
-    path('signup/', Signup.as_view(), name='signup'),
-    # path('', views.redirection),
-    # path('projects/', ),
+    path('signup/', views.Signup.as_view(), name='signup'),
+    path('projects/', views.ProjectList.as_view()),
+    path('projects/<int:project_id>', views.ProjectDetail.as_view()),
+    path('projects/<int:project_id>/users', views.ProjectContributors.as_view()),
+    path('projects/<int:project_id>/users/<int:user_id>', views.DeleteContributor.as_view()),
+    path('projects/<int:project_id>/issues', views.IssuesList.as_view()),
+    path('projects/<int:project_id>/issues/<int:issue_id>', views.IssueDetails.as_view()),
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments', views.CommentsList.as_view()),
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments/<int:comment_id>', views.CommentDetails.as_view()),
 ]
