@@ -34,6 +34,18 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
 
 
 class ProjectContributorSerializer(serializers.ModelSerializer):
+    # emails = serializers.SerializerMethodField("get_emails")
+    #
+    # def get_emails(self, obj):
+    #     contributors = list(obj.contributors.all())
+    #     print("######### dans get_emails ################")
+    #     print(contributors)
+    #     contributors_email = []
+    #     for contributor in contributors:
+    #         print(contributor.email)
+    #         contributors_email.append(contributor.email)
+    #     return contributors_email
+
     class Meta:
         model = Projects
         fields = ['contributors']

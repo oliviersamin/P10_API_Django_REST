@@ -94,9 +94,21 @@ class ProjectContributors(APIView):
         return Response(status=status.HTTP_403_FORBIDDEN)
 
     def post(self, request, project_id):
+        users = list(User.objects.all())
         project = Projects.objects.get(id=project_id)
         serializer = serializers.ProjectContributorSerializer(project, data=request.data)
-        if (serializer.is_valid()) & (project.author.pk == request.user.pk):
+        print("############## REQUEST.DATA ###############")
+        print(request.data)
+        # print(users)
+        # ids=[]
+        # for user in users:
+        #     if user.email in request.data['contributors']:
+        #         print("################  YOUPI ######################")
+        #         ids.append(user.pk)
+        #         print(ids)
+
+        if (project.author.pk == request.user.pk) & (serializer.is_valid()):
+            print(serializer.validated_data)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         elif (serializer.is_valid()) & (project.author.pk != request.user.pk):
@@ -146,13 +158,13 @@ class IssuesList(APIView):
         contributors = [contributor.pk for contributor in project.contributors.all()]
         if (project.author.pk == request.user.pk) or (request.user.pk in contributors):
             serializer = serializers.CreateIssueSerializer(data=request.data)
-            if (serializer.is_valid()) & (project.author.pk == request.user.pk):
+            if (serializer.is_valid()):
                 serializer.save(project_id=project, author=request.user)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            elif (serializer.is_valid()) & (project.author.pk != request.user.pk):
-                return Response(status=status.HTTP_403_FORBIDDEN)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(status=status.HTTP_403_FORBIDDEN)
 
 
 class IssueDetails(APIView):
