@@ -5,7 +5,7 @@
 {
 "title":"test",
 "description":"desc",    
-"type":"BACK-END"
+"type":"back-end"
 }
 
 #################################################################################################################
@@ -13,7 +13,7 @@
 {
 "title":"modif",
 "description":"desc",    
-"type":"IOS"
+"type":"ios"
 }
 
 #################################################################################################################
@@ -33,9 +33,9 @@
 {
 "title":"issue_test", 
 "description":"description_test", 
-"tag":"TACHE", 
-"priority":"ELEVEE", 
-"status":"A FAIRE", 
+"tag":"tâche", 
+"priority":"élevée", 
+"status":"à faire", 
 "assignee":"1"
 }
 
@@ -45,9 +45,9 @@
 {
 "title":"issue_modif", 
 "description":"description_modif", 
-"tag":"BUG", 
-"priority":"MOYENNE", 
-"status":"EN COURS", 
+"tag":"bug", 
+"priority":"moyenne", 
+"status":"en cours", 
 "assignee":"6"
 }
 

@@ -20,7 +20,7 @@ from rest_framework import routers
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('softdesk/v1/', include('rest_framework.urls', namespace='rest_framework')),
+    # path('softdesk/v1/', include('rest_framework.urls', namespace='rest_framework')),
     path('softdesk/v1/', include('v1.urls', namespace='v1')),
     # path('softdesk/v1/signup/', include('rest_registration.api.urls', namespace='signup'))
 ]

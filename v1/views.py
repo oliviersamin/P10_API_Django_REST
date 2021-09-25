@@ -2,7 +2,6 @@ from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import permissions
 from . import serializers
-# from .serializers import UserSerializer, ProjectListSerializer, ProjectDetailSerializer, ProjectContributorSerializer
 from .models import Projects, Issues, Comments
 from rest_framework import generics
 from rest_framework.response import Response
@@ -10,6 +9,15 @@ from rest_framework.views import APIView
 from django.db.models import CharField, Value
 from itertools import chain
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
+class BlacklistRefreshView(APIView):
+    def post(self, request):
+        token = RefreshToken(request.data.get('refresh'))
+        token.blacklist()
+        return Response("Success")
 
 
 class Signup(generics.CreateAPIView):
@@ -24,9 +32,12 @@ class ProjectList(APIView):
     * only the projects related to the user are accessible through the GET method
     * the POST method allows the user to create a new project, he will be the author.
     """
-
+    permission_classes = (IsAuthenticated,)
     def get(self, request):
         users = list(User.objects.all())
+        # print("############## PRINT #####################")
+        # print(users)
+        # print(request, request.user, request.auth)
         if request.user in users:
             projects1 = Projects.objects.filter(author=request.user)
             projects2 = Projects.objects.filter(contributors=request.user)
@@ -53,7 +64,7 @@ class ProjectDetail(APIView):
     * only the projects related to the user are accessible through the GET method
 
     """
-
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -85,6 +96,7 @@ class ProjectContributors(APIView):
     """
     à remplir
     """
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -121,7 +133,7 @@ class DeleteContributor(APIView):
     """
     à remplir
     """
-
+    permission_classes = (IsAuthenticated,)
     def delete(self, request, project_id, user_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -139,7 +151,7 @@ class IssuesList(APIView):
     """
     A FAIRE
     """
-
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -171,7 +183,7 @@ class IssueDetails(APIView):
     """
     A FAIRE
     """
-
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id, issue_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -204,6 +216,7 @@ class CommentsList(APIView):
     """
     A FAIRE
     """
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id, issue_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -237,6 +250,7 @@ class CommentDetails(APIView):
     """
     A FAIRE
     """
+    permission_classes = (IsAuthenticated,)
     def get(self, request, project_id, issue_id, comment_id):
         project = Projects.objects.get(id=project_id)
         contributors = [contributor.pk for contributor in project.contributors.all()]
@@ -271,6 +285,7 @@ class UserView(viewsets.ModelViewSet):
     """
     API endpoint that allows users to be viewed or edited.
     """
+    permission_classes = (IsAuthenticated,)
     queryset = User.objects.all().order_by('-date_joined')
     serializer_class = serializers.UserSerializer
     permission_classes = [permissions.IsAuthenticated]
