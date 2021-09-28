@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from django.db.models import CharField, Value
 from itertools import chain
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 
 
@@ -21,6 +21,7 @@ class BlacklistRefreshView(APIView):
 
 
 class Signup(generics.CreateAPIView):
+    permission_classes = (AllowAny,)
     queryset = User.objects.all()
     serializer_class = serializers.UserSerializer
 
@@ -34,20 +35,14 @@ class ProjectList(APIView):
     """
     permission_classes = (IsAuthenticated,)
     def get(self, request):
-        users = list(User.objects.all())
-        # print("############## PRINT #####################")
-        # print(users)
-        # print(request, request.user, request.auth)
-        if request.user in users:
-            projects1 = Projects.objects.filter(author=request.user)
-            projects2 = Projects.objects.filter(contributors=request.user)
-            projects1 = projects1.annotate(content_type=Value('author', CharField()))
-            projects2 = projects2.annotate(content_type=Value('contributor', CharField()))
-            projects = set(sorted(chain(projects1, projects2), key=lambda project: project.id))
-            projects = list(projects)
-            serializer = serializers.ProjectListSerializer(projects, many=True)
-            return Response(serializer.data)
-        return Response(status=status.HTTP_403_FORBIDDEN)
+        projects1 = Projects.objects.filter(author=request.user)
+        projects2 = Projects.objects.filter(contributors=request.user)
+        projects1 = projects1.annotate(content_type=Value('author', CharField()))
+        projects2 = projects2.annotate(content_type=Value('contributor', CharField()))
+        projects = set(sorted(chain(projects1, projects2), key=lambda project: project.id))
+        projects = list(projects)
+        serializer = serializers.ProjectListSerializer(projects, many=True)
+        return Response(serializer.data)
 
     def post(self, request):
         serializer = serializers.ProjectDetailSerializer(data=request.data)
@@ -264,6 +259,8 @@ class CommentDetails(APIView):
     def put(self, request, project_id, issue_id, comment_id):
         comment = Comments.objects.get(id=comment_id)
         serializer = serializers.CommentDetailsSerializer(comment, data=request.data)
+        print("#############  put comment ##################")
+        print(serializer.is_valid(), comment.author.pk, request.user.pk)
         if (serializer.is_valid()) & (comment.author.pk == request.user.pk):
             serializer.save()
             return Response(serializer.data)
