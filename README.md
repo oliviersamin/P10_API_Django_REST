@@ -19,6 +19,28 @@ The API follows issues encountered in several projects of clients.
 
 
 
+## Installation
+
+This locally-executable API can be installed using the following steps.
+
+### Installation and execution using venv and pip
+
+1. Clone this repository using `$ git clone https://github.com/oliviersamin/P10_API_Django_REST.git` (you can also download the code using [as a zip file](https://github.com/oliviersamin/P10_API_Django_REST/archive/refs/heads/main.zip))
+2. 2. Move to the P10_API_Django_REST folder with `$ cd P10_API_Django_REST`
+3. Create a virtual environment for the project with `$ py -m venv env` on windows or `$ python3 -m venv env` on macos or linux.
+4. Activate the virtual environment with `$ env\Scripts\activate` on windows or `$ source env/bin/activate` on macos or linux.
+5. Install project dependencies with `$ pip install -r requirements.txt`
+6. Run the server with `$ python manage.py runserver`
+
+When the server is running after step 6 of the procedure, the API can be requested from endpoints starting with the following base URL: http://127.0.0.1:8000/softdesk/v1/
+
+Steps 1, 3 and 5 are only required for initial installation. For subsequent launches of the API, you only have to execute steps 4 and 6 from the root folder of the project.
+
+## Usage and detailed endpoint documentation
+
+You can read the documentation through the POSTMAN documentation of the API by visiting [this page](https://documenter.getpostman.com/view/16015714/UUxzB8Bu).
+
+
 #### list of all the action to perform, method to use and the associated URI
 | ACTION PERFORMED | METHOD | URI |  
 | ---------------- | ----------- |  ----------- | 
@@ -45,25 +67,3 @@ The API follows issues encountered in several projects of clients.
 | Delete a comment related to an issue | DELETE | softdesk/v1/projects/{project_id}/issues/{issue_id}/comments/{comment_id} |
 | Logout | POST | softdesk/v1/logout/ | 
 
-
-## Installation
-
-This locally-executable API can be installed using the following steps.
-
-### Installation and execution using venv and pip
-
-1. Clone this repository using `$ git clone https://github.com/oliviersamin/P10_API_Django_REST.git` (you can also download the code using [as a zip file](https://github.com/oliviersamin/P10_API_Django_REST/archive/refs/heads/main.zip))
-2. 2. Move to the P10_API_Django_REST folder with `$ cd P10_API_Django_REST`
-3. Create a virtual environment for the project with `$ py -m venv env` on windows or `$ python3 -m venv env` on macos or linux.
-4. Activate the virtual environment with `$ env\Scripts\activate` on windows or `$ source env/bin/activate` on macos or linux.
-5. Install project dependencies with `$ pip install -r requirements.txt`
-6. Run the server with `$ python manage.py runserver`
-
-When the server is running after step 6 of the procedure, the API can be requested from endpoints starting with the following base URL: http://127.0.0.1:8000/softdesk/v1/
-
-Steps 1, 3 and 5 are only required for initial installation. For subsequent launches of the API, you only have to execute steps 4 and 6 from the root folder of the project.
-
-## Usage and detailed endpoint documentation
-
-One you have launched the server, you can read the documentation through the POSTMAN documentation of the API by 
-visiting [this page](https://documenter.getpostman.com/view/16015714/UUxzB8Bu).
