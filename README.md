@@ -25,8 +25,8 @@ This locally-executable API can be installed using the following steps.
 
 ### Installation and execution using venv and pip
 
-1. Clone this repository using `$ git clone https://github.com/oliviersamin/P10_API_Django_REST.git` (you can also download the code using [as a zip file](https://github.com/oliviersamin/P10_API_Django_REST/archive/refs/heads/main.zip))
-2. 2. Move to the P10_API_Django_REST folder with `$ cd P10_API_Django_REST`
+1. Clone this repository using `$ git clone https://github.com/oliviersamin/P10_API_Django_REST.git` (you can also download the repo [as a zip file](https://github.com/oliviersamin/P10_API_Django_REST/archive/refs/heads/main.zip))
+2. Move to the P10_API_Django_REST folder with `$ cd P10_API_Django_REST`
 3. Create a virtual environment for the project with `$ py -m venv env` on windows or `$ python3 -m venv env` on macos or linux.
 4. Activate the virtual environment with `$ env\Scripts\activate` on windows or `$ source env/bin/activate` on macos or linux.
 5. Install project dependencies with `$ pip install -r requirements.txt`
